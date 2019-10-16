@@ -46,9 +46,12 @@ static const struct mrb_data_type mrb_filelistencheck_data_type = {
              &state);                                                                              \
                                                                                                    \
       inet_ntop(AF_INET, (struct in_addr *)&(laddr.s##ver##_addr), lip##ver, sizeof(lip##ver));    \
-      if (data->port == l && strcmp(lip##ver, data->addr) == 0 && state == TCP_LISTEN)             \
+      if (data->port == l && strcmp(lip##ver, data->addr) == 0 && state == TCP_LISTEN) {           \
+        fclose(tcp);                                                                               \
         return mrb_true_value();                                                                   \
+      }                                                                                            \
     }                                                                                              \
+    fclose(tcp);                                                                                   \
     return mrb_false_value();                                                                      \
   }
 
