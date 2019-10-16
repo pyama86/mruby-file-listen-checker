@@ -13,6 +13,7 @@ assert("FileListenCheck#listen?") do
   Process.kill :TERM, v4
 end
 
+
 assert("FileListenCheck#listen6?") do
   v6 = Process.fork do
     system "nc -l -6 -p 11112"
@@ -22,5 +23,4 @@ assert("FileListenCheck#listen6?") do
   assert_false(FileListenCheck.new("::", 11111).listen6?)
   assert_true(FileListenCheck.new("::", 11112).listen6?)
   Process.kill :TERM, v6
-end
-
+end if File.exists?("/proc/net/tcp6")
