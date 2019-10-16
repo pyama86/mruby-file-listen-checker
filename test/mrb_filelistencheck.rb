@@ -24,19 +24,3 @@ assert("FileListenCheck#listen6?") do
   Process.kill :TERM, v6
 end
 
-
-assert("change ns") do
-  pid1 = Process.fork do
-    Namespace.unshare(Namespace::CLONE_NEWNS)
-    Namespace.unshare(Namespace::CLONE_NEWNET)
-    system "nc -l -4 -p 11113"
-  end
-  sleep 1
-  ns = Namespace.nsenter(Namespace::CLONE_NEWNS|Namespace::CLONE_NEWNET, :pid => pid1) {
-    exit 0 if FileListenCheck.new("0.0.0.0", 11113).listen?
-    exit 1
-  } rescue nil
-
-  assert_true ns.success?
-  Process.kill :TERM, pid1
-end
