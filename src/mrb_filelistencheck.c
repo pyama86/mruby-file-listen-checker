@@ -45,8 +45,7 @@ static const struct mrb_data_type mrb_filelistencheck_data_type = {
       memset(lip##ver, 0, sizeof(lip##ver));                                                       \
       sscanf(buf, "%*u: %X:%hX %*X:%*hX %hhX %*X:%*X %*X:%*X %*X", &(laddr.s##ver##_addr), &l,     \
              &state);                                                                              \
-      inet_ntop(AF_INET##ver, (struct in##ver##_addr *)&(laddr.s##ver##_addr), lip##ver,           \
-                sizeof(lip##ver));                                                                 \
+      inet_ntop(AF_INET##ver, &(laddr.s##ver##_addr), lip##ver, sizeof(lip##ver));                 \
       printf("%s:%d\n", lip##ver, l);                                                              \
       if (data->port == l && state == TCP_LISTEN) {                                                \
         if (strcmp(lip##ver, data->addr) == 0) {                                                   \
