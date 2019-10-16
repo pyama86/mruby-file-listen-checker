@@ -4,7 +4,7 @@
 
 assert("FileListenCheck#listen?") do
   v4 = Process.fork do
-    system "nc -l 0.0.0.0 -4 -p 11111"
+    system "nc -4 -l 0.0.0.0 11111"
   end
   sleep 2
 
@@ -16,7 +16,7 @@ end
 
 assert("FileListenCheck#listen6?") do
   v6 = Process.fork do
-    system "nc -l :: -6 -p 11112"
+    system "nc -6 -l :: 11112"
   end
   sleep 2
 
