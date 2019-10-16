@@ -22,6 +22,7 @@ assert("FileListenCheck#listen6?") do
 
   puts "="*30
   puts `netstat -an |grep -i listen`
+  puts `cat /proc/net/tcp6`
   puts "="*30
   assert_false(FileListenCheck.new("::", 11111).listen6?)
   assert_true(FileListenCheck.new("::", 11112).listen6?)
