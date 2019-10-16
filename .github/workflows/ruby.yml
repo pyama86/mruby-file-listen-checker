@@ -15,7 +15,7 @@ jobs:
         ruby-version: 2.6.x
     - name: Build and test with Rake
       run: |
-        apt update -qqy
-        apt install -qqy ncat
+        sudo apt update -qqy
+        sudo apt install -qqy ncat
         gem install rake
         rake test
