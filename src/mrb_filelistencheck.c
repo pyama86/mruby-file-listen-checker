@@ -15,8 +15,6 @@
 #include <sys/socket.h>
 #define BUFSIZE 512
 #define DONE mrb_gc_arena_restore(mrb, 0);
-static const unsigned LINE_LEN = 1500;
-static const unsigned MAX_LINES = 65500;
 typedef struct {
   int port;
   char *addr;
@@ -32,15 +30,15 @@ static const struct mrb_data_type mrb_filelistencheck_data_type = {
   {                                                                                                \
     FILE *tcp;                                                                                     \
     struct in##ver##_addr laddr;                                                                   \
-    unsigned short l, r;                                                                           \
+    unsigned short l;                                                                              \
     char lip##ver[INET##ver##_ADDRSTRLEN];                                                         \
                                                                                                    \
-    unsigned int state;                                                                            \
+    unsigned int state = 0;                                                                        \
     mrb_filelistencheck_data *data = DATA_PTR(self);                                               \
                                                                                                    \
-    tcp = fopen("/proc/net/tcp", "r");                                                             \
+    tcp = fopen("/proc/net/tcp" #ver, "r");                                                        \
     if (!tcp)                                                                                      \
-      mrb_raise(mrb, E_RUNTIME_ERROR, "can't open /proc/net/tcp");                                 \
+      mrb_raise(mrb, E_RUNTIME_ERROR, "can't open /proc/net/tcp" #ver);                            \
                                                                                                    \
     char buf[BUFSIZE];                                                                             \
     while (fgets(buf, BUFSIZE, tcp)) {                                                             \
@@ -48,7 +46,6 @@ static const struct mrb_data_type mrb_filelistencheck_data_type = {
              &state);                                                                              \
                                                                                                    \
       inet_ntop(AF_INET, (struct in_addr *)&(laddr.s##ver##_addr), lip##ver, sizeof(lip##ver));    \
-                                                                                                   \
       if (data->port == l && strcmp(lip##ver, data->addr) == 0 && state == TCP_LISTEN)             \
         return mrb_true_value();                                                                   \
     }                                                                                              \
