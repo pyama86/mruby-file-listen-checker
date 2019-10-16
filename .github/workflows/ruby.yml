@@ -16,6 +16,6 @@ jobs:
     - name: Build and test with Rake
       run: |
         sudo apt update -qqy
-        sudo apt install -qqy ncat bison libssl-dev net-tools
+        sudo apt install -qqy netcat bison libssl-dev net-tools
         cd /tmp && gem install rake && cd -
         rake test
