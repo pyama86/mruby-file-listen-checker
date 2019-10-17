@@ -65,7 +65,7 @@ static const struct mrb_data_type mrb_filelistencheck_data_type = {
         sscanf(local_addr, "%X", (unsigned int *)&result_addr_local);                              \
       }                                                                                            \
       if (data->port == local_port && state == TCP_LISTEN) {                                       \
-        inet_ntop(AF_INET##ver, &result_addr_local, local_string, 49);                             \
+        inet_ntop(AF_INET##ver, &result_addr_local, local_string, INET##ver##_ADDRSTRLEN);         \
         if (strcmp(local_string, data->addr) == 0) {                                               \
           ret = mrb_true_value();                                                                  \
           break;                                                                                   \
