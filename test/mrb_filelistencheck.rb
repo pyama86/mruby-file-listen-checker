@@ -8,8 +8,8 @@ assert("FileListenCheck#listen?") do
   end
   sleep 2
 
-  assert_true(FileListenCheck.new("0.0.0.0", 11111).listen?)
-  assert_false(FileListenCheck.new("0.0.0.0", 11112).listen?)
+  assert_true(FileListenCheck.new("0.0.0.0", 11111).listen?, "listen ok")
+  assert_false(FileListenCheck.new("0.0.0.0", 11112).listen?, "does not listen")
   Process.kill :TERM, v4
 end
 
@@ -24,7 +24,7 @@ assert("FileListenCheck#listen6?") do
   puts `netstat -an |grep -i listen`
   puts `cat /proc/net/tcp6`
   puts "="*30
-  assert_false(FileListenCheck.new("::", 11111).listen6?)
-  assert_true(FileListenCheck.new("::", 11112).listen6?)
+  assert_false(FileListenCheck.new("::", 11111).listen6?, "does not listen")
+  assert_true(FileListenCheck.new("::", 11112).listen6?, "listen ok")
   Process.kill :TERM, v6
 end if File.exists?("/proc/net/tcp6")

@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #define BUFSIZE 512
@@ -25,37 +26,54 @@ static const struct mrb_data_type mrb_filelistencheck_data_type = {
     mrb_free,
 };
 
+// printf("%s:%d\n", local_string, local_port);
 #define LISTEN(ver)                                                                                \
   static mrb_value mrb_is_listen##ver(mrb_state *mrb, mrb_value self)                              \
   {                                                                                                \
     FILE *tcp;                                                                                     \
-    struct in##ver##_addr laddr;                                                                   \
-    unsigned short l;                                                                              \
-    char lip##ver[INET##ver##_ADDRSTRLEN];                                                         \
-                                                                                                   \
+    char local_addr[INET##ver##_ADDRSTRLEN];                                                       \
+    int local_port;                                                                                \
     unsigned int state = 0;                                                                        \
     mrb_filelistencheck_data *data = DATA_PTR(self);                                               \
-                                                                                                   \
+    struct in6_addr in6_local;                                                                     \
+    struct in6_addr result_addr_local;                                                             \
+    char local_string[INET##ver##_ADDRSTRLEN];                                                     \
+    mrb_value ret = mrb_false_value();                                                             \
     tcp = fopen("/proc/net/tcp" #ver, "r");                                                        \
     if (!tcp)                                                                                      \
       mrb_raise(mrb, E_RUNTIME_ERROR, "can't open /proc/net/tcp" #ver);                            \
                                                                                                    \
     char buf[BUFSIZE];                                                                             \
     while (fgets(buf, BUFSIZE, tcp)) {                                                             \
-      memset(lip##ver, 0, sizeof(lip##ver));                                                       \
-      sscanf(buf, "%*u: %X:%hX %*X:%*hX %hhX %*X:%*X %*X:%*X %*X", &(laddr.s##ver##_addr), &l,     \
-             &state);                                                                              \
-      inet_ntop(AF_INET##ver, &(laddr.s##ver##_addr), lip##ver, sizeof(lip##ver));                 \
-      printf("%s:%d\n", lip##ver, l);                                                              \
-      if (data->port == l && state == TCP_LISTEN) {                                                \
-        if (strcmp(lip##ver, data->addr) == 0) {                                                   \
-          fclose(tcp);                                                                             \
-          return mrb_true_value();                                                                 \
+      int matches = sscanf(buf,                                                                    \
+                           "%*d: %64[0-9A-Fa-f]:%X %*64[0-9A-Fa-f]:%*X %X %*X:%*X %*X:%*X %*X "    \
+                           "%*d %*d %*ld %*512s\n",                                                \
+                           local_addr, &local_port, &state);                                       \
+      if (matches != 3) {                                                                          \
+        continue;                                                                                  \
+      }                                                                                            \
+      if (strlen(local_addr) > 8) {                                                                \
+        sscanf(local_addr, "%08X%08X%08X%08X", &in6_local.s6_addr32[0], &in6_local.s6_addr32[1],   \
+               &in6_local.s6_addr32[2], &in6_local.s6_addr32[3]);                                  \
+        if ((in6_local.s6_addr32[0] == 0x0) && (in6_local.s6_addr32[1] == 0x0) &&                  \
+            (in6_local.s6_addr32[2] == 0xFFFF0000)) {                                              \
+          result_addr_local = *((struct in6_addr *)&(in6_local.s6_addr32[3]));                     \
+        } else {                                                                                   \
+          result_addr_local = in6_local;                                                           \
+        }                                                                                          \
+      } else {                                                                                     \
+        sscanf(local_addr, "%X", (unsigned int *)&result_addr_local);                              \
+      }                                                                                            \
+      if (data->port == local_port && state == TCP_LISTEN) {                                       \
+        inet_ntop(AF_INET##ver, &result_addr_local, local_string, 49);                             \
+        if (strcmp(local_string, data->addr) == 0) {                                               \
+          ret = mrb_true_value();                                                                  \
+          break;                                                                                   \
         }                                                                                          \
       }                                                                                            \
     }                                                                                              \
     fclose(tcp);                                                                                   \
-    return mrb_false_value();                                                                      \
+    return ret;                                                                                    \
   }
 
 LISTEN()
