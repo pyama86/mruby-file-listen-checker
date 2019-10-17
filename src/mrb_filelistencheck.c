@@ -27,6 +27,7 @@ static const struct mrb_data_type mrb_filelistencheck_data_type = {
 };
 
 // printf("%s:%d\n", local_string, local_port);
+// refs: https://github.com/deployfu/nethogs/blob/master/conninode.cpp
 #define LISTEN(ver)                                                                                \
   static mrb_value mrb_is_listen##ver(mrb_state *mrb, mrb_value self)                              \
   {                                                                                                \
